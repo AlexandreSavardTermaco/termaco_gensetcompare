@@ -6,6 +6,7 @@
     <title>Genset Fuel Consumption Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -67,6 +68,12 @@
     <h1>Genset Fuel Consumption Calculator</h1>
     
     <div class="calculator-section">
+        <h2>Import PDF Document</h2>
+        <input type="file" id="pdfUpload" accept="application/pdf">
+        <div id="pdfResult"></div>
+    </div>
+
+    <div class="calculator-section">
         <h2>Standard Genset System</h2>
         <label for="gensetSize">Genset Size (kW):</label>
         <input type="number" id="gensetSize" min="20" max="2250" step="1" required>
@@ -94,11 +101,11 @@
         <h2>Genset with Batteries Comparison</h2>
         <label for="batteryGensetSize">Genset with Batteries Size (kW):</label>
         <input type="number" id="batteryGensetSize" min="20" max="2250" step="1" required>
-        <label for="batteryAverageLoad">Average Load (kW):</label>
+        <label for="batteryAverageLoad">Average Genset (kW):</label>
         <input type="number" id="batteryAverageLoad" min="0" step="0.1" required>
-        <label for="batteryTotalHours">Total Hours of Operation:</label>
+        <label for="batteryTotalHours">Genset Hours of Operation:</label>
         <input type="number" id="batteryTotalHours" min="0" step="0.1" required>
-        <button onclick="compareBatterySystem()">Compare Genset with Batteries</button>
+        <button onclick="compareBatterySystem()">Compare</button>
         <div id="comparisonResult"></div>
         <div id="co2ComparisonResult"></div>
         <div id="summaryResult"></div>
@@ -320,7 +327,7 @@
                 updateFuelConsumptionChart(standardTotalFuelConsumption, batteryTotalFuelConsumption, unit);
                 updateCO2ConsumptionChart(standardCO2, batteryCO2, co2Unit);
             }
-    
+
             function updateRuntimeChart(standardHours, batteryHours) {
                 const ctx = document.getElementById('runtimeChart').getContext('2d');
                 const hoursSaved = Math.max(0, standardHours - batteryHours);
@@ -339,7 +346,8 @@
                             backgroundColor: ['#36A2EB', '#FFCE56', '#4BC0C0']
                         }]
                     },
-                    options: {indexAxis: 'y',
+                    options: {
+                        indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
                         layout: {
@@ -516,6 +524,57 @@
                     },
                     plugins: [ChartDataLabels]
                 });
+            }
+
+            // PDF.js integration to read and parse the PDF document
+            document.getElementById('pdfUpload').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file && file.type === 'application/pdf') {
+                    const reader = new FileReader();
+                    reader.onload = function() {
+                        const typedarray = new Uint8Array(this.result);
+                        pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+                            pdf.getPage(1).then(function(page) {
+                                page.getTextContent().then(function(textContent) {
+                                    const text = textContent.items.map(item => item.str).join(' ');
+                                    parsePDFData(text);
+                                });
+                            });
+                        });
+                    };
+                    reader.readAsArrayBuffer(file);
+                } else {
+                    alert('Please upload a valid PDF file.');
+                }
+            });
+
+            function parsePDFData(text) {
+                // Regex to match the values in the order they appear in the provided image.
+                const regex = /(\d+\.\d+)/g;
+                const matches = text.match(regex);
+                if (matches && matches.length >= 5) {
+                    const totalHours = parseFloat(matches[0]); // Total hours of operation: 720.0
+                    const averageLoad = parseFloat(matches[1]); // Average Load kW: 9.07
+                    const gensetRuntime = parseFloat(matches[3]); // Genset Runtime: 26.67
+                    const averageGensetKW = parseFloat(matches[4]); // Average Genset kW: 242.92
+
+                    document.getElementById('averageLoad').value = averageLoad;
+                    document.getElementById('totalHours').value = totalHours;
+                    document.getElementById('batteryAverageLoad').value = averageGensetKW;
+                    document.getElementById('batteryTotalHours').value = gensetRuntime;
+
+                    document.getElementById('pdfResult').innerHTML = `
+                        <p><strong>Extracted Data:</strong></p>
+                        <p>Total Hours of Operation: ${totalHours} hours</p>
+                        <p>Average Load: ${averageLoad} kW</p>
+                        <p>Genset Runtime: ${gensetRuntime} hours</p>
+                        <p>Average Genset kW: ${averageGensetKW} kW</p>
+                    `;
+
+                    calculate();
+                } else {
+                    document.getElementById('pdfResult').innerText = 'Failed to extract data from the PDF.';
+                }
             }
         };
     </script>
