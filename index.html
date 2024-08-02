@@ -6,7 +6,6 @@
     <title>Genset Fuel Consumption Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -67,12 +66,6 @@
     <img src="TERMACO_Vert_Bilingue_H.jpg" alt="Company Logo" class="logo">
     <h1>Genset Fuel Consumption Calculator</h1>
     
-    <div class="calculator-section">
-        <h2>Import PDF Document</h2>
-        <input type="file" id="pdfUpload" accept="application/pdf">
-        <div id="pdfResult"></div>
-    </div>
-
     <div class="calculator-section">
         <h2>Standard Genset System</h2>
         <label for="gensetSize">Genset Size (kW):</label>
@@ -203,8 +196,8 @@
             }
 
             function calculateCO2Savings(co2Saved, co2UnitType) {
-                const co2PerHouseKg = 9190; // Average household CO2 emissions per year in kg
-                const co2PerCarKg = 2087; // Average car CO2 emissions per year in kg
+                const co2PerHouseKg = 10970; // Average household CO2 emissions per year in kg
+                const co2PerCarKg = 4600; // Average car CO2 emissions per year in kg
 
                 if (co2UnitType === 'lbs') {
                     // Convert kg to lbs
@@ -323,7 +316,7 @@
                     <p><strong>CO2 Saved:</strong> ${co2Saved.toFixed(2)} ${co2Unit}</p>
                 `;
     
-                updateRuntimeChart(standardResult.totalHours, batteryResult.totalHours);
+                updateRuntimeChart(standardTotalHours, batteryTotalHours);
                 updateFuelConsumptionChart(standardTotalFuelConsumption, batteryTotalFuelConsumption, unit);
                 updateCO2ConsumptionChart(standardCO2, batteryCO2, co2Unit);
             }
@@ -524,57 +517,6 @@
                     },
                     plugins: [ChartDataLabels]
                 });
-            }
-
-            // PDF.js integration to read and parse the PDF document
-            document.getElementById('pdfUpload').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file && file.type === 'application/pdf') {
-                    const reader = new FileReader();
-                    reader.onload = function() {
-                        const typedarray = new Uint8Array(this.result);
-                        pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
-                            pdf.getPage(1).then(function(page) {
-                                page.getTextContent().then(function(textContent) {
-                                    const text = textContent.items.map(item => item.str).join(' ');
-                                    parsePDFData(text);
-                                });
-                            });
-                        });
-                    };
-                    reader.readAsArrayBuffer(file);
-                } else {
-                    alert('Please upload a valid PDF file.');
-                }
-            });
-
-            function parsePDFData(text) {
-                // Regex to match the values in the order they appear in the provided image.
-                const regex = /(\d+\.\d+)/g;
-                const matches = text.match(regex);
-                if (matches && matches.length >= 5) {
-                    const totalHours = parseFloat(matches[0]); // Total hours of operation: 720.0
-                    const averageLoad = parseFloat(matches[1]); // Average Load kW: 9.07
-                    const gensetRuntime = parseFloat(matches[3]); // Genset Runtime: 26.67
-                    const averageGensetKW = parseFloat(matches[4]); // Average Genset kW: 242.92
-
-                    document.getElementById('averageLoad').value = averageLoad;
-                    document.getElementById('totalHours').value = totalHours;
-                    document.getElementById('batteryAverageLoad').value = averageGensetKW;
-                    document.getElementById('batteryTotalHours').value = gensetRuntime;
-
-                    document.getElementById('pdfResult').innerHTML = `
-                        <p><strong>Extracted Data:</strong></p>
-                        <p>Total Hours of Operation: ${totalHours} hours</p>
-                        <p>Average Load: ${averageLoad} kW</p>
-                        <p>Genset Runtime: ${gensetRuntime} hours</p>
-                        <p>Average Genset kW: ${averageGensetKW} kW</p>
-                    `;
-
-                    calculate();
-                } else {
-                    document.getElementById('pdfResult').innerText = 'Failed to extract data from the PDF.';
-                }
             }
         };
     </script>
