@@ -191,8 +191,15 @@
                 return kg * 2.20462;
             }
     
-            function calculateCO2Emissions(fuelConsumption) {
-                return fuelConsumption * 10.21;
+            function calculateCO2Emissions(fuelConsumption, unitType) {
+                const co2PerLiter = 10.21; // CO2 emission per liter in kg
+                const co2PerGallon = co2PerLiter * 3.78541; // CO2 emission per gallon in kg
+        
+                if (unitType === 'l') {
+                    return convertKgToLbs(fuelConsumption * co2PerLiter); // Convert to lbs for liters
+                } else {
+                    return fuelConsumption * co2PerGallon; // Keep in kg for gallons
+                }
             }
 
             function calculateCO2Savings(co2Saved, co2UnitType) {
@@ -230,11 +237,8 @@
                     const totalFuelConsumption = unitType === 'l' ? convertToLiters(result.totalFuelConsumption) : result.totalFuelConsumption;
                     const unit = unitType === 'l' ? 'liters' : 'gallons';
                     const totalCost = totalFuelConsumption * fuelPrice;
-                    let totalCO2 = calculateCO2Emissions(totalFuelConsumption);
-                    if (co2UnitType === 'lbs') {
-                        totalCO2 = convertKgToLbs(totalCO2);
-                    }
-                    const co2Unit = co2UnitType === 'lbs' ? 'lbs' : 'kg';
+                    const totalCO2 = calculateCO2Emissions(totalFuelConsumption, unitType);
+                    const co2Unit = unitType === 'l' ? 'lbs' : 'kg';
     
                     document.getElementById('result').innerHTML = 
                         `Estimated average fuel consumption: ${fuelConsumptionPerHour.toFixed(2)} ${unit}/hr<br>` +
@@ -280,16 +284,11 @@
                 const percentageSaved = (fuelSaved / standardTotalFuelConsumption) * 100;
                 const moneySaved = fuelSaved * fuelPrice;
 
-                let standardCO2 = calculateCO2Emissions(standardTotalFuelConsumption);
-                let batteryCO2 = calculateCO2Emissions(batteryTotalFuelConsumption);
-                let co2Saved = standardCO2 - batteryCO2;
+                const standardCO2 = calculateCO2Emissions(standardTotalFuelConsumption, unitType);
+                const batteryCO2 = calculateCO2Emissions(batteryTotalFuelConsumption, unitType);
+                const co2Saved = standardCO2 - batteryCO2;
                 
-                if (co2UnitType === 'lbs') {
-                    standardCO2 = convertKgToLbs(standardCO2);
-                    batteryCO2 = convertKgToLbs(batteryCO2);
-                    co2Saved = convertKgToLbs(co2Saved);
-                }
-                const co2Unit = co2UnitType === 'lbs' ? 'lbs' : 'kg';
+                const co2Unit = unitType === 'l' ? 'lbs' : 'kg';
                 
                 const co2Savings = calculateCO2Savings(co2Saved, co2UnitType);
     
