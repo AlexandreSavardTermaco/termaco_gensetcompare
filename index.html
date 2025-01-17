@@ -115,238 +115,211 @@
     </div>
 
 <script>
-    window.onload = function() {
-        const equations = [
-            { maxSize: 20, equation: "y = 0.45e0.0662x" },
-            { maxSize: 30, equation: "y = 1.0242e0.0359x" },
-            { maxSize: 40, equation: "y = 1.2133e0.0308x" },
-            { maxSize: 60, equation: "y = 1.3991e0.0214x" },
-            { maxSize: 75, equation: "y = 1.7918e0.0165x" },
-            { maxSize: 100, equation: "y = 1.9353e0.0139x" },
-            { maxSize: 125, equation: "y = 2.2979e0.0115x" },
-            { maxSize: 135, equation: "y = 2.4496e0.0107x" },
-            { maxSize: 150, equation: "y = 2.6486e0.0098x" },
-            { maxSize: 175, equation: "y = 3.0001e0.0086x" },
-            { maxSize: 200, equation: "y = 3.4369e0.0074x" },
-            { maxSize: 230, equation: "y = 3.8589e0.0066x" },
-            { maxSize: 250, equation: "y = 4.141e0.0061x" },
-            { maxSize: 300, equation: "y = 4.9298e0.0051x" },
-            { maxSize: 350, equation: "y = 5.7072e0.0044x" },
-            { maxSize: 400, equation: "y = 6.4239e0.0039x" },
-            { maxSize: 500, equation: "y = 7.9185e0.0031x" },
-            { maxSize: 600, equation: "y = 9.4638e0.0026x" },
-            { maxSize: 750, equation: "y = 11.676e0.0021x" },
-            { maxSize: 1000, equation: "y = 15.455e0.0016x" },
-            { maxSize: 1250, equation: "y = 19.213e0.0013x" },
-            { maxSize: 1500, equation: "y = 22.992e0.0011x" },
-            { maxSize: 1750, equation: "y = 26.75e0.0009x" },
-            { maxSize: 2000, equation: "y = 30.53e0.0008x" },
-            { maxSize: 2250, equation: "y = 34.288e0.0007x" }
-        ];
-
-        let runtimeChart, fuelConsumptionChart, co2ConsumptionChart;
-
-        function calculateUsingEquation(equation, x) {
-            const [a, b] = equation.split('e');
-            const coefficient = parseFloat(a.split('=')[1].trim());
-            const exponent = parseFloat(b.split('x')[0]);
-            return coefficient * Math.exp(exponent * x);
-        }
-
-        function calculateFuelConsumption(gensetSize, averageLoad, totalHours) {
-            if (isNaN(gensetSize) || gensetSize < 20 || gensetSize > 2250) {
-                return { error: "Please enter a valid genset size between 20 and 2250 kW." };
+        window.onload = function() {
+            const equations = [
+                { maxSize: 20, equation: "y = 0.45e0.0662x" },
+                { maxSize: 30, equation: "y = 1.0242e0.0359x" },
+                { maxSize: 40, equation: "y = 1.2133e0.0308x" },
+                { maxSize: 60, equation: "y = 1.3991e0.0214x" },
+                { maxSize: 75, equation: "y = 1.7918e0.0165x" },
+                { maxSize: 100, equation: "y = 1.9353e0.0139x" },
+                { maxSize: 125, equation: "y = 2.2979e0.0115x" },
+                { maxSize: 135, equation: "y = 2.4496e0.0107x" },
+                { maxSize: 150, equation: "y = 2.6486e0.0098x" },
+                { maxSize: 175, equation: "y = 3.0001e0.0086x" },
+                { maxSize: 200, equation: "y = 3.4369e0.0074x" },
+                { maxSize: 230, equation: "y = 3.8589e0.0066x" },
+                { maxSize: 250, equation: "y = 4.141e0.0061x" },
+                { maxSize: 300, equation: "y = 4.9298e0.0051x" },
+                { maxSize: 350, equation: "y = 5.7072e0.0044x" },
+                { maxSize: 400, equation: "y = 6.4239e0.0039x" },
+                { maxSize: 500, equation: "y = 7.9185e0.0031x" },
+                { maxSize: 600, equation: "y = 9.4638e0.0026x" },
+                { maxSize: 750, equation: "y = 11.676e0.0021x" },
+                { maxSize: 1000, equation: "y = 15.455e0.0016x" },
+                { maxSize: 1250, equation: "y = 19.213e0.0013x" },
+                { maxSize: 1500, equation: "y = 22.992e0.0011x" },
+                { maxSize: 1750, equation: "y = 26.75e0.0009x" },
+                { maxSize: 2000, equation: "y = 30.53e0.0008x" },
+                { maxSize: 2250, equation: "y = 34.288e0.0007x" }
+            ];
+    
+            let runtimeChart, fuelConsumptionChart, co2ConsumptionChart;
+    
+            function calculateUsingEquation(equation, x) {
+                const [a, b] = equation.split('e');
+                const coefficient = parseFloat(a.split('=')[1].trim());
+                const exponent = parseFloat(b.split('x')[0]);
+                return coefficient * Math.exp(exponent * x);
+            }
+    
+            function calculateFuelConsumption(gensetSize, averageLoad, totalHours) {
+                if (isNaN(gensetSize) || gensetSize < 20 || gensetSize > 2250) {
+                    return { error: "Please enter a valid genset size between 20 and 2250 kW." };
+                }
+    
+                if (isNaN(averageLoad) || averageLoad < 0 || averageLoad > gensetSize) {
+                    return { error: "Please enter a valid average load between 0 and the genset size." };
+                }
+    
+                if (isNaN(totalHours) || totalHours < 0) {
+                    return { error: "Please enter a valid number of hours." };
+                }
+    
+                const selectedEquation = equations.find(eq => gensetSize <= eq.maxSize);
+                if (!selectedEquation) {
+                    return { error: "No suitable equation found for the given genset size." };
+                }
+    
+                const loadFraction = averageLoad / gensetSize;
+                const fuelConsumptionPerHour = calculateUsingEquation(selectedEquation.equation, averageLoad);
+                const totalFuelConsumption = fuelConsumptionPerHour * totalHours;
+                
+                return {
+                    fuelConsumptionPerHour,
+                    loadFraction,
+                    totalFuelConsumption,
+                    totalHours
+                };
+            }
+    
+            function convertToLiters(gallons) {
+                return gallons * 3.78541;
             }
 
-            if (isNaN(averageLoad) || averageLoad < 0 || averageLoad > gensetSize) {
-                return { error: "Please enter a valid average load between 0 and the genset size." };
+            function convertKgToLbs(kg) {
+                return kg * 2.20462;
+            }
+    
+            function calculateCO2Emissions(fuelConsumption) {
+                return fuelConsumption * 10.21;
             }
 
-            if (isNaN(totalHours) || totalHours < 0) {
-                return { error: "Please enter a valid number of hours." };
-            }
+            function calculateCO2Savings(co2Saved, co2UnitType) {
+                const co2PerHouseKg = 11031.82; // Average household CO2 emissions per year in kg
+                const co2PerCarKg = 7584.518; // Average car CO2 emissions per year in kg
 
-            const selectedEquation = equations.find(eq => gensetSize <= eq.maxSize);
-            if (!selectedEquation) {
-                return { error: "No suitable equation found for the given genset size." };
-            }
-
-            const loadFraction = averageLoad / gensetSize;
-            const fuelConsumptionPerHour = calculateUsingEquation(selectedEquation.equation, averageLoad);
-            const totalFuelConsumption = fuelConsumptionPerHour * totalHours;
-            
-            return {
-                fuelConsumptionPerHour,
-                loadFraction,
-                totalFuelConsumption,
-                totalHours
-            };
-        }
-
-        function convertToLiters(gallons) {
-            return gallons * 3.78541;
-        }
-
-        function convertKgToLbs(kg) {
-            return kg * 2.20462;
-        }
-
-        // Calculate CO2 emissions correctly for gallons or liters
-        function calculateCO2Emissions(fuelConsumption, isLiters = false) {
-            // 10.21 kg CO₂/gal (diesel) vs. ~2.68 kg CO₂/liter
-            const co2Factor = isLiters ? 2.68 : 10.21;
-            return fuelConsumption * co2Factor;
-        }
-
-        function calculateCO2Savings(co2Saved, co2UnitType) {
-            const co2PerHouseKg = 11031.82; // Average household CO2 emissions per year in kg
-            const co2PerCarKg = 7584.518;   // Average car CO2 emissions per year in kg
-
-            if (co2UnitType === 'lbs') {
-                // Convert from kg to lbs
-                co2Saved = convertKgToLbs(co2Saved);
-            }
-
-            const housesSaved = co2Saved / (co2UnitType === 'lbs' ? convertKgToLbs(co2PerHouseKg) : co2PerHouseKg);
-            const carsSaved = co2Saved / (co2UnitType === 'lbs' ? convertKgToLbs(co2PerCarKg) : co2PerCarKg);
-
-            return {
-                houses: housesSaved,
-                cars: carsSaved
-            };
-        }
-
-        window.calculate = function() {
-            const gensetSize = parseFloat(document.getElementById('gensetSize').value);
-            const averageLoad = parseFloat(document.getElementById('averageLoad').value);
-            const totalHours = parseFloat(document.getElementById('totalHours').value);
-            const unitType = document.getElementById('unitType').value;
-            const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
-            const co2UnitType = document.getElementById('co2UnitType').value;
-            
-            const result = calculateFuelConsumption(gensetSize, averageLoad, totalHours);
-            
-            if (result.error) {
-                document.getElementById('result').innerText = result.error;
-            } else {
-                // Convert from gallons to liters if needed
-                const fuelConsumptionPerHour = unitType === 'l' 
-                    ? convertToLiters(result.fuelConsumptionPerHour) 
-                    : result.fuelConsumptionPerHour;
-                const totalFuelConsumption = unitType === 'l' 
-                    ? convertToLiters(result.totalFuelConsumption) 
-                    : result.totalFuelConsumption;
-
-                const unit = unitType === 'l' ? 'liters' : 'gallons';
-
-                // Calculate CO2 using the correct factor for the chosen unit
-                let totalCO2 = calculateCO2Emissions(
-                    totalFuelConsumption, 
-                    unitType === 'l' // Pass true if in liters
-                );
-
-                // Convert CO2 to lbs if requested
                 if (co2UnitType === 'lbs') {
-                    totalCO2 = convertKgToLbs(totalCO2);
+                    // Convert kg to lbs
+                    co2Saved = convertKgToLbs(co2Saved);
+                }
+
+                const housesSaved = co2Saved / (co2UnitType === 'lbs' ? convertKgToLbs(co2PerHouseKg) : co2PerHouseKg);
+                const carsSaved = co2Saved / (co2UnitType === 'lbs' ? convertKgToLbs(co2PerCarKg) : co2PerCarKg);
+
+                return {
+                    houses: housesSaved,
+                    cars: carsSaved
+                };
+            }
+    
+            window.calculate = function() {
+                const gensetSize = parseFloat(document.getElementById('gensetSize').value);
+                const averageLoad = parseFloat(document.getElementById('averageLoad').value);
+                const totalHours = parseFloat(document.getElementById('totalHours').value);
+                const unitType = document.getElementById('unitType').value;
+                const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+                const co2UnitType = document.getElementById('co2UnitType').value;
+                
+                const result = calculateFuelConsumption(gensetSize, averageLoad, totalHours);
+                
+                if (result.error) {
+                    document.getElementById('result').innerText = result.error;
+                } else {
+                    const fuelConsumptionPerHour = unitType === 'l' ? convertToLiters(result.fuelConsumptionPerHour) : result.fuelConsumptionPerHour;
+                    const totalFuelConsumption = unitType === 'l' ? convertToLiters(result.totalFuelConsumption) : result.totalFuelConsumption;
+                    const unit = unitType === 'l' ? 'liters' : 'gallons';
+                    const totalCost = totalFuelConsumption * fuelPrice;
+                    let totalCO2 = calculateCO2Emissions(totalFuelConsumption);
+                    if (co2UnitType === 'lbs') {
+                        totalCO2 = convertKgToLbs(totalCO2);
+                    }
+                    const co2Unit = co2UnitType === 'lbs' ? 'lbs' : 'kg';
+    
+                    document.getElementById('result').innerHTML = 
+                        Estimated average fuel consumption: ${fuelConsumptionPerHour.toFixed(2)} ${unit}/hr<br> +
+                        Average load: ${(result.loadFraction * 100).toFixed(1)}% of genset capacity<br> +
+                        Total fuel consumption: ${totalFuelConsumption.toFixed(2)} ${unit} over ${result.totalHours} hours<br> +
+                        Total fuel cost: $${totalCost.toFixed(2)}<br> +
+                        Total CO2 emissions: ${totalCO2.toFixed(2)} ${co2Unit};
+                }
+            }
+    
+            window.compareBatterySystem = function() {
+                const standardGensetSize = parseFloat(document.getElementById('gensetSize').value);
+                const standardAverageLoad = parseFloat(document.getElementById('averageLoad').value);
+                const standardTotalHours = parseFloat(document.getElementById('totalHours').value);
+                
+                const batteryGensetSize = parseFloat(document.getElementById('batteryGensetSize').value);
+                const batteryAverageLoad = parseFloat(document.getElementById('batteryAverageLoad').value);
+                const batteryTotalHours = parseFloat(document.getElementById('batteryTotalHours').value);
+                
+                const unitType = document.getElementById('unitType').value;
+                const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+                const co2UnitType = document.getElementById('co2UnitType').value;
+    
+                const standardResult = calculateFuelConsumption(standardGensetSize, standardAverageLoad, standardTotalHours);
+                const batteryResult = calculateFuelConsumption(batteryGensetSize, batteryAverageLoad, batteryTotalHours);
+                
+                if (standardResult.error || batteryResult.error) {
+                    document.getElementById('comparisonResult').innerText = standardResult.error || batteryResult.error;
+                    return;
+                }
+                
+                let standardTotalFuelConsumption = standardResult.totalFuelConsumption;
+                let batteryTotalFuelConsumption = batteryResult.totalFuelConsumption;
+    
+                if (unitType === 'l') {
+                    standardTotalFuelConsumption = convertToLiters(standardTotalFuelConsumption);
+                    batteryTotalFuelConsumption = convertToLiters(batteryTotalFuelConsumption);
+                }
+
+                const fuelConsumptionPerHour = unitType === 'l' ? convertToLiters(batteryResult.fuelConsumptionPerHour) : batteryResult.fuelConsumptionPerHour;
+    
+                const fuelSaved = standardTotalFuelConsumption - batteryTotalFuelConsumption;
+                const percentageSaved = (fuelSaved / standardTotalFuelConsumption) * 100;
+                const moneySaved = fuelSaved * fuelPrice;
+
+                let standardCO2 = calculateCO2Emissions(standardTotalFuelConsumption);
+                let batteryCO2 = calculateCO2Emissions(batteryTotalFuelConsumption);
+                let co2Saved = standardCO2 - batteryCO2;
+                
+                if (co2UnitType === 'lbs') {
+                    standardCO2 = convertKgToLbs(standardCO2);
+                    batteryCO2 = convertKgToLbs(batteryCO2);
+                    co2Saved = convertKgToLbs(co2Saved);
                 }
                 const co2Unit = co2UnitType === 'lbs' ? 'lbs' : 'kg';
-
-                const totalCost = totalFuelConsumption * fuelPrice;
+                
+                const co2Savings = calculateCO2Savings(co2Saved, co2UnitType);
     
-                document.getElementById('result').innerHTML = 
-                    `Estimated average fuel consumption: ${fuelConsumptionPerHour.toFixed(2)} ${unit}/hr<br>` +
-                    `Average load: ${(result.loadFraction * 100).toFixed(1)}% of genset capacity<br>` +
-                    `Total fuel consumption: ${totalFuelConsumption.toFixed(2)} ${unit} over ${result.totalHours} hours<br>` +
-                    `Total fuel cost: $${totalCost.toFixed(2)}<br>` +
-                    `Total CO2 emissions: ${totalCO2.toFixed(2)} ${co2Unit}`;
+                const unit = unitType === 'l' ? 'liters' : 'gallons';
+                
+                document.getElementById('comparisonResult').innerHTML = 
+                    Estimated average fuel consumption: ${fuelConsumptionPerHour.toFixed(2)} ${unit}/hr<br> +
+                    Standard Genset Total Fuel Consumption: ${standardTotalFuelConsumption.toFixed(2)} ${unit}<br> +
+                    Genset with Batteries Total Fuel Consumption: ${batteryTotalFuelConsumption.toFixed(2)} ${unit}<br> +
+                    Fuel Saved: ${fuelSaved.toFixed(2)} ${unit}<br> +
+                    Percentage Saved: ${percentageSaved.toFixed(2)}%<br> +
+                    Money Saved: $${moneySaved.toFixed(2)}<br> +
+                    Standard Genset CO2 Emissions: ${standardCO2.toFixed(2)} ${co2Unit}<br> +
+                    Genset with Batteries CO2 Emissions: ${batteryCO2.toFixed(2)} ${co2Unit}<br> +
+                    CO2 Saved: ${co2Saved.toFixed(2)} ${co2Unit};
+                    
+                document.getElementById('co2ComparisonResult').innerHTML =
+                    Equivalent CO2 emissions saved: ${co2Savings.houses.toFixed(2)} houses or ${co2Savings.cars.toFixed(2)} cars per year.;
+
+                document.getElementById('summaryResult').innerHTML = 
+                    <h3>Summary</h3>
+                    <p><strong>Fuel Saved:</strong> ${fuelSaved.toFixed(2)} ${unit}</p>
+                    <p><strong>Money Saved:</strong> $${moneySaved.toFixed(2)}</p>
+                    <p><strong>CO2 Saved:</strong> ${co2Saved.toFixed(2)} ${co2Unit}</p>
+                ;
+    
+                updateRuntimeChart(standardTotalHours, batteryTotalHours);
+                updateFuelConsumptionChart(standardTotalFuelConsumption, batteryTotalFuelConsumption, unit);
+                updateCO2ConsumptionChart(standardCO2, batteryCO2, co2Unit);
             }
-        }
-
-        window.compareBatterySystem = function() {
-            const standardGensetSize = parseFloat(document.getElementById('gensetSize').value);
-            const standardAverageLoad = parseFloat(document.getElementById('averageLoad').value);
-            const standardTotalHours = parseFloat(document.getElementById('totalHours').value);
-
-            const batteryGensetSize = parseFloat(document.getElementById('batteryGensetSize').value);
-            const batteryAverageLoad = parseFloat(document.getElementById('batteryAverageLoad').value);
-            const batteryTotalHours = parseFloat(document.getElementById('batteryTotalHours').value);
-
-            const unitType = document.getElementById('unitType').value;
-            const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
-            const co2UnitType = document.getElementById('co2UnitType').value;
-
-            const standardResult = calculateFuelConsumption(standardGensetSize, standardAverageLoad, standardTotalHours);
-            const batteryResult = calculateFuelConsumption(batteryGensetSize, batteryAverageLoad, batteryTotalHours);
-
-            if (standardResult.error || batteryResult.error) {
-                document.getElementById('comparisonResult').innerText = standardResult.error || batteryResult.error;
-                return;
-            }
-
-            let standardTotalFuelConsumption = standardResult.totalFuelConsumption;
-            let batteryTotalFuelConsumption = batteryResult.totalFuelConsumption;
-
-            // Convert to liters if needed
-            if (unitType === 'l') {
-                standardTotalFuelConsumption = convertToLiters(standardTotalFuelConsumption);
-                batteryTotalFuelConsumption = convertToLiters(batteryTotalFuelConsumption);
-            }
-
-            const fuelConsumptionPerHour = unitType === 'l' 
-                ? convertToLiters(batteryResult.fuelConsumptionPerHour) 
-                : batteryResult.fuelConsumptionPerHour;
-
-            const fuelSaved = standardTotalFuelConsumption - batteryTotalFuelConsumption;
-            const percentageSaved = (fuelSaved / standardTotalFuelConsumption) * 100;
-            const moneySaved = fuelSaved * fuelPrice;
-
-            // Calculate CO2 for standard and battery solutions
-            let standardCO2 = calculateCO2Emissions(
-                standardTotalFuelConsumption, 
-                unitType === 'l'
-            );
-            let batteryCO2 = calculateCO2Emissions(
-                batteryTotalFuelConsumption, 
-                unitType === 'l'
-            );
-            let co2Saved = standardCO2 - batteryCO2;
-
-            // Convert CO2 to lbs if requested
-            if (co2UnitType === 'lbs') {
-                standardCO2 = convertKgToLbs(standardCO2);
-                batteryCO2 = convertKgToLbs(batteryCO2);
-                co2Saved = convertKgToLbs(co2Saved);
-            }
-            const co2Unit = co2UnitType === 'lbs' ? 'lbs' : 'kg';
-
-            const co2Savings = calculateCO2Savings(co2Saved, co2UnitType);
-
-            const unit = unitType === 'l' ? 'liters' : 'gallons';
-
-            document.getElementById('comparisonResult').innerHTML = 
-                `Estimated average fuel consumption: ${fuelConsumptionPerHour.toFixed(2)} ${unit}/hr<br>` +
-                `Standard Genset Total Fuel Consumption: ${standardTotalFuelConsumption.toFixed(2)} ${unit}<br>` +
-                `Genset with Batteries Total Fuel Consumption: ${batteryTotalFuelConsumption.toFixed(2)} ${unit}<br>` +
-                `Fuel Saved: ${fuelSaved.toFixed(2)} ${unit}<br>` +
-                `Percentage Saved: ${percentageSaved.toFixed(2)}%<br>` +
-                `Money Saved: $${moneySaved.toFixed(2)}<br>` +
-                `Standard Genset CO2 Emissions: ${standardCO2.toFixed(2)} ${co2Unit}<br>` +
-                `Genset with Batteries CO2 Emissions: ${batteryCO2.toFixed(2)} ${co2Unit}<br>` +
-                `CO2 Saved: ${co2Saved.toFixed(2)} ${co2Unit}`;
-
-            document.getElementById('co2ComparisonResult').innerHTML =
-                `Equivalent CO2 emissions saved: ${co2Savings.houses.toFixed(2)} houses or ${co2Savings.cars.toFixed(2)} cars per year.`;
-
-            document.getElementById('summaryResult').innerHTML = 
-                `<h3>Summary</h3>
-                 <p><strong>Fuel Saved:</strong> ${fuelSaved.toFixed(2)} ${unit}</p>
-                 <p><strong>Money Saved:</strong> $${moneySaved.toFixed(2)}</p>
-                 <p><strong>CO2 Saved:</strong> ${co2Saved.toFixed(2)} ${co2Unit}</p>`;
-
-            updateRuntimeChart(standardTotalHours, batteryTotalHours);
-            updateFuelConsumptionChart(standardTotalFuelConsumption, batteryTotalFuelConsumption, unit);
-            updateCO2ConsumptionChart(standardCO2, batteryCO2, co2Unit);
-        }
 
             function updateRuntimeChart(standardHours, batteryHours) {
                 const ctx = document.getElementById('runtimeChart').getContext('2d');
