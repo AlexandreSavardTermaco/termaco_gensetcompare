@@ -435,7 +435,7 @@
                     data: {
                         labels: ['Standard Genset', 'Genset with Batteries', 'Fuel Saved'],
                         datasets: [{
-                            label: Fuel Consumption (${unit}),
+                            label: `Fuel Consumption (${unit})`,
                             data: [standardConsumption, batteryConsumption, fuelSaved],
                             backgroundColor: ['#36A2EB', '#FFCE56', '#4BC0C0']
                         }]
@@ -454,7 +454,7 @@
                                 beginAtZero: true,
                                 title: {
                                     display: true,
-                                    text: Fuel Consumption (${unit})
+                                    text: `Fuel Consumption (${unit})`
                                 }
                             },
                             y: {
@@ -501,7 +501,7 @@
                     data: {
                         labels: ['Standard Genset', 'Genset with Batteries', 'CO2 Saved'],
                         datasets: [{
-                            label: CO2 Emissions (${co2Unit}),
+                            label: `CO2 Emissions (${co2Unit})`,
                             data: [standardCO2, batteryCO2, co2Saved],
                             backgroundColor: ['#36A2EB', '#FFCE56', '#4BC0C0']
                         }]
@@ -520,7 +520,7 @@
                                 beginAtZero: true,
                                 title: {
                                     display: true,
-                                    text: CO2 Emissions (${co2Unit})
+                                    text: `CO2 Emissions (${co2Unit})`
                                 }
                             },
                             y: {
